@@ -15,9 +15,6 @@ namespace Drones.Controllers
     [Route("/api/dispatch")]
     public class DispatchController : ControllerBase
     {
-        
-
-
         private readonly ILogger<DispatchController> _logger;
         private readonly AppDBContext _dbContext;
 
@@ -32,10 +29,12 @@ namespace Drones.Controllers
         /// </summary>
         /// <returns></returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
         [HttpGet]
         public ActionResult<List<DroneVM>> GetDrones()
         {
-           var drones= _dbContext.Drones.Include(x=>x.Medications).ToList();
+           var drones= _dbContext.Drones.ToList();
             return Ok( drones.Select<Drone,DroneVM>(x=>DroneVM.FromDrone(x)));
         }
 
@@ -46,6 +45,8 @@ namespace Drones.Controllers
         /// <returns></returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
 
         [Route("{id}")]
         [HttpGet]
@@ -65,6 +66,8 @@ namespace Drones.Controllers
         /// Model {Lightweight=0,Middleweight = 1,Cruiserweight = 2,Heavyweight = 3}</remarks>
         /// <returns></returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
         [HttpPost]
         public IActionResult RegisterDrone(DroneRM drone)
         {
@@ -88,12 +91,22 @@ namespace Drones.Controllers
         /// <returns></returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Route("{id}")]
         [HttpPut]
         public IActionResult LoadDrone(int id, MedicationRM medication)
         {
             var drone = _dbContext.Drones.Find(id);
             if (drone == null) return NotFound("Drone not Found");
+
+            if (drone.BatteryCapacity <= 25)
+                return BadRequest("Battery below 25%");
+            if(drone.AvailableWeight<medication.Weight)
+                return BadRequest("The maximum load of the drone is 500 gr");
+            if(drone.Status!=DroneStatus.IDLE||drone.Status!=DroneStatus.LOADING)
+                return BadRequest("The drone is not available");
+
+
             _dbContext.Medications.Add(new Medication()
             {
                 Code = medication.Code,
@@ -102,6 +115,14 @@ namespace Drones.Controllers
                 Name = medication.Name,
                 Weight = medication.Weight
             });
+            drone.AvailableWeight-=medication.Weight;
+            if (drone.AvailableWeight == 0)
+                drone.Status = DroneStatus.LOADED;
+            else
+                drone.Status=DroneStatus.LOADING;
+
+
+            _dbContext.Drones.Update(drone);
             _dbContext.SaveChanges();
             return Ok();
         }
@@ -111,11 +132,14 @@ namespace Drones.Controllers
         /// </summary>
         /// <returns></returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
         [Route("Available")]
         [HttpGet]
         public ActionResult<List<DroneVM>> GetAvailableDrones()
         {
-            var drones = _dbContext.Drones.Include(x => x.Medications).Where(x=>x.BatteryCapacity>=25 && x.AvailableWeight>0).ToList();
+            var drones = _dbContext.Drones.Include(x => x.Medications)
+                .Where(x=>x.BatteryCapacity>=25 && x.AvailableWeight>0 && (x.Status==DroneStatus.IDLE||x.Status==DroneStatus.LOADING)).ToList();
             return Ok(drones.Select<Drone, DroneVM>(x => DroneVM.FromDrone(x)));
         }
 
@@ -126,6 +150,8 @@ namespace Drones.Controllers
         /// <returns></returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
         [Route("battery_level/{id}")]
         [HttpGet]
         public ActionResult<DroneVM> GetDroneBatteryLevel(int id)
