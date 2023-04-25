@@ -8,7 +8,7 @@ namespace Drones.LocalServices
 
         private readonly IServiceScopeFactory _factory;
         private readonly ILogger<PeriodicHostedService> _logger;
-        private readonly TimeSpan _period = TimeSpan.FromSeconds(5);
+        private readonly TimeSpan _period = TimeSpan.FromSeconds(30);
         private int _executionCount = 0;
         public bool IsEnabled { get; set; } = true;
         public PeriodicHostedService(ILogger<PeriodicHostedService> logger,IServiceScopeFactory factory)

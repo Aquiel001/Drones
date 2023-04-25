@@ -13,5 +13,6 @@ namespace Drones.Infrastructure.DataContext
 
         public DbSet<Drone> Drones { get; set; }
         public DbSet<Medication> Medications { get; set; }
+        public DbSet<BatteryLevelLog> BatteryLevelLogs { get; set; }
     }
 }
