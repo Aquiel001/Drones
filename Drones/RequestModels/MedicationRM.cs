@@ -1,4 +1,6 @@
 ﻿using Drones.Infrastructure.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace Drones.RequestModels
 {

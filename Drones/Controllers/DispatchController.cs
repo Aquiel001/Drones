@@ -1,12 +1,16 @@
 using Drones.Infrastructure.DataContext;
 using Drones.Infrastructure.Models;
 using Drones.RequestModels;
+using Drones.Shared;
 using Drones.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Drones.Controllers
 {
+    [Produces("application/json")]
+    [Consumes("application/json")]
+
     [ApiController]
     [Route("/api/dispatch")]
     public class DispatchController : ControllerBase
@@ -27,6 +31,7 @@ namespace Drones.Controllers
         /// Get all Drones
         /// </summary>
         /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
         public ActionResult<List<DroneVM>> GetDrones()
         {
@@ -39,6 +44,9 @@ namespace Drones.Controllers
         /// </summary>
         /// <param name="id">Drone Id</param>
         /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
         [Route("{id}")]
         [HttpGet]
         public ActionResult<DroneVM> GetDrone(int id)
@@ -53,7 +61,10 @@ namespace Drones.Controllers
         /// Register a Drone
         /// </summary>
         /// <param name="drone"><seealso cref="DroneRM"/></param>
+        /// <remarks>Status {IDLE=0,LOADING=1,LOADED=2,DELIVERING=3,DELIVERED=4,RETURNING=5} \
+        /// Model {Lightweight=0,Middleweight = 1,Cruiserweight = 2,Heavyweight = 3}</remarks>
         /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpPost]
         public IActionResult RegisterDrone(DroneRM drone)
         {
@@ -75,10 +86,14 @@ namespace Drones.Controllers
         /// <param name="id"></param>
         /// <param name="medication"></param>
         /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("{id}")]
         [HttpPut]
         public IActionResult LoadDrone(int id, MedicationRM medication)
         {
+            var drone = _dbContext.Drones.Find(id);
+            if (drone == null) return NotFound("Drone not Found");
             _dbContext.Medications.Add(new Medication()
             {
                 Code = medication.Code,
@@ -95,6 +110,7 @@ namespace Drones.Controllers
         /// Get all Available Drones
         /// </summary>
         /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [Route("Available")]
         [HttpGet]
         public ActionResult<List<DroneVM>> GetAvailableDrones()
@@ -108,6 +124,8 @@ namespace Drones.Controllers
         /// </summary>
         /// <param name="id">Drone Id</param>
         /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("battery_level/{id}")]
         [HttpGet]
         public ActionResult<DroneVM> GetDroneBatteryLevel(int id)

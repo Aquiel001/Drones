@@ -1,5 +1,8 @@
 ﻿using Drones.Shared;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Drones.RequestModels
 {
@@ -33,7 +36,6 @@ namespace Drones.RequestModels
         /// <summary>
         /// Drone Status
         /// </summary>
-        /// <seealso cref="DroneStatus"/>
         public DroneStatus Status { get; set; }
     }
 }
