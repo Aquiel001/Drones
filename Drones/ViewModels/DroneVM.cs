@@ -55,8 +55,8 @@ namespace Drones.ViewModels
                 Model=drone.Model.ToString(),
                 SerialNumber=drone.SerialNumber,
                 Status=drone.Status.ToString(),
-                Weight =string.Format("{0} gm",decimal.Round( drone.Weight,2)),
-                AvailableWeight =string.Format("{0} gm",decimal.Round( drone.AvailableWeight,2)),
+                Weight =string.Format("{0} gr",decimal.Round( drone.Weight,2)),
+                AvailableWeight =string.Format("{0} gr",decimal.Round( drone.AvailableWeight,2)),
                 Medications=drone.Medications.Select<Medication,MedicationVM>(x=>new MedicationVM()
                 {
                     Id = x.Id,
