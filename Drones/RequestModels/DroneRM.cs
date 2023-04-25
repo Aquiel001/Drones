@@ -25,12 +25,14 @@ namespace Drones.RequestModels
         /// Weight
         /// </summary>
         /// <remarks>  (500gr max);</remarks>
+        [Range(0,500)]
         public decimal Weight { get; set; }
 
         /// <summary>
         /// Battery Capacity 
         /// </summary>
         /// <remarks> Battery Capacity in Percent</remarks>
+        [Range(0,100)]
         public int BatteryCapacity { get; set; }
 
         /// <summary>
