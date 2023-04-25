@@ -1,0 +1,121 @@
+using Drones.Infrastructure.DataContext;
+using Drones.Infrastructure.Models;
+using Drones.RequestModels;
+using Drones.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace Drones.Controllers
+{
+    [ApiController]
+    [Route("/api/dispatch")]
+    public class DispatchController : ControllerBase
+    {
+        
+
+
+        private readonly ILogger<DispatchController> _logger;
+        private readonly AppDBContext _dbContext;
+
+        public DispatchController(ILogger<DispatchController> logger,AppDBContext dBContext)
+        {
+            _logger = logger;
+            _dbContext= dBContext;
+        }
+
+        /// <summary>
+        /// Get all Drones
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult<List<DroneVM>> GetDrones()
+        {
+           var drones= _dbContext.Drones.Include(x=>x.Medications).ToList();
+            return Ok( drones.Select<Drone,DroneVM>(x=>DroneVM.FromDrone(x)));
+        }
+
+        /// <summary>
+        /// Get Drone By Id
+        /// </summary>
+        /// <param name="id">Drone Id</param>
+        /// <returns></returns>
+        [Route("{id}")]
+        [HttpGet]
+        public ActionResult<DroneVM> GetDrone(int id)
+        {
+            var drone = _dbContext.Drones.Include(x=>x.Medications).Where(x=>x.Id==id).FirstOrDefault();
+            if(drone==null)
+                return NotFound("Drone not Found");
+            return Ok( DroneVM.FromDrone(drone));
+        }
+
+        /// <summary>
+        /// Register a Drone
+        /// </summary>
+        /// <param name="drone"><seealso cref="DroneRM"/></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult RegisterDrone(DroneRM drone)
+        {
+            _dbContext.Drones.Add(new Drone() 
+            {
+                BatteryCapacity=drone.BatteryCapacity,
+                Model=drone.Model,
+                SerialNumber=drone.SerialNumber,
+                Status=drone.Status,
+                Weight=drone.Weight
+            });
+            _dbContext.SaveChanges();
+            return Ok();
+        }
+
+        /// <summary>
+        /// Load a Drone
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="medication"></param>
+        /// <returns></returns>
+        [Route("{id}")]
+        [HttpPut]
+        public IActionResult LoadDrone(int id, MedicationRM medication)
+        {
+            _dbContext.Medications.Add(new Medication()
+            {
+                Code = medication.Code,
+                DroneId = id,
+                Image = medication.Image,
+                Name = medication.Name,
+                Weight = medication.Weight
+            });
+            _dbContext.SaveChanges();
+            return Ok();
+        }
+
+        /// <summary>
+        /// Get all Available Drones
+        /// </summary>
+        /// <returns></returns>
+        [Route("Available")]
+        [HttpGet]
+        public ActionResult<List<DroneVM>> GetAvailableDrones()
+        {
+            var drones = _dbContext.Drones.Include(x => x.Medications).Where(x=>x.BatteryCapacity>=25 && x.AvailableWeight>0).ToList();
+            return Ok(drones.Select<Drone, DroneVM>(x => DroneVM.FromDrone(x)));
+        }
+
+        /// <summary>
+        /// Get Drone Battery level
+        /// </summary>
+        /// <param name="id">Drone Id</param>
+        /// <returns></returns>
+        [Route("battery_level/{id}")]
+        [HttpGet]
+        public ActionResult<DroneVM> GetDroneBatteryLevel(int id)
+        {
+            var drone = _dbContext.Drones.Find(id);
+            if (drone == null)
+                return NotFound("Drone not Found");
+            return Ok(new BatteryLevelVM() {BatteryLevel=drone.BatteryCapacity });
+        }
+    }
+}

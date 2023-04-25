@@ -1,3 +1,6 @@
+using Drones.Infrastructure.DataContext;
+using Drones.Infrastructure.DataContext.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
@@ -14,6 +17,9 @@ builder.Services.AddSwaggerGen(c=>
     var xmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, xmlFile);
     c.IncludeXmlComments(xmlPath);
 });
+
+builder.Services.AddDbContext<AppDBContext>(options => options.UseInMemoryDatabase(databaseName: "InMemory_DB"));  
+DbInitializer.Initialize(builder.Services.BuildServiceProvider());
 
 
 
