@@ -17,6 +17,7 @@ namespace Drones.ViewModels
         /// <summary>
         /// Serial Number
         /// </summary>
+        [MaxLength(100)]
         public string SerialNumber { get; set; }
         /// <summary>
         /// Drone Model
