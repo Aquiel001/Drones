@@ -38,5 +38,6 @@ namespace Drones.Infrastructure.Models
         public DroneStatus Status { get; set; }
 
         public virtual ICollection<Medication> Medications { get; set; }
+        public virtual ICollection<BatteryLevelLog> BatteryLevelLogs { get; set; }
     }
 }

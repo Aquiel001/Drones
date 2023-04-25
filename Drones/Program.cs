@@ -1,5 +1,7 @@
 using Drones.Infrastructure.DataContext;
 using Drones.Infrastructure.DataContext.Data;
+using Drones.LocalServices;
+using Drones.LocalServices.BatteryLevelLogService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
@@ -20,6 +22,10 @@ builder.Services.AddSwaggerGen(c=>
 builder.Services.AddDbContext<AppDBContext>(options => options.UseInMemoryDatabase(databaseName: "InMemory_DB"));  
 DbInitializer.Initialize(builder.Services.BuildServiceProvider());
 
+builder.Services.AddScoped<IBatteryLevelLogService,BatteryLevelLogService>();
+builder.Services.AddSingleton<PeriodicHostedService>();
+builder.Services.AddHostedService(
+    provider => provider.GetRequiredService<PeriodicHostedService>());
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
