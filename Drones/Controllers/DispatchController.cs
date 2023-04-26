@@ -103,7 +103,7 @@ namespace Drones.Controllers
                 return BadRequest("Battery below 25%");
             if(drone.AvailableWeight<medication.Weight)
                 return BadRequest("The maximum load of the drone is 500 gr");
-            if(drone.Status!=DroneStatus.IDLE||drone.Status!=DroneStatus.LOADING)
+            if(drone.Status!=DroneStatus.IDLE && drone.Status!=DroneStatus.LOADING)
                 return BadRequest("The drone is not available");
 
 
@@ -140,7 +140,7 @@ namespace Drones.Controllers
         {
             var drones = _dbContext.Drones.Include(x => x.Medications)
                 .Where(x=>x.BatteryCapacity>=25 && x.AvailableWeight>0 && (x.Status==DroneStatus.IDLE||x.Status==DroneStatus.LOADING)).ToList();
-            return Ok(drones.Select<Drone, DroneVM>(x => DroneVM.FromDrone(x)));
+            return Ok(drones.Select<Drone, DroneVM>(x => DroneVM.FromDrone(x)).ToList());
         }
 
         /// <summary>
